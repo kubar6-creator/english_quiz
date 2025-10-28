@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Quizzes</title>
+<style>
+body { font-family: Arial; padding: 20px; background-color: #f0f0f0; }
+h1, h2 { text-align: center; }
+.quiz-container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+button { margin: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+.hidden { display: none; }
+#feedback { margin-top: 15px; font-weight: bold; }
+img { display: block; margin: 10px auto; max-width: 300px; }
+</style>
+</head>
+<body>
+<div class="quiz-container">
+<h1>בחר חידון</h1>
+<div id="menu">
+<button onclick="startQuiz(1)">1. אותיות גדולות (שמע)</button>
+<button onclick="startQuiz(2)">2. אותיות קטנות (שמע)</button>
+<button onclick="startQuiz(3)">3. אות קטנה → אות גדולה</button>
+<button onclick="startQuiz(4)">4. אות גדולה → אות קטנה</button>
+<button onclick="startQuiz(5)">5. מילה (שמע)</button>
+<button onclick="startQuiz(6)">6. תמונה → אות ראשונה</button>
+</div>
+<div id="quiz" class="hidden">
+<h2 id="question"></h2>
+<img id="questionImage" class="hidden"/>
+<div id="options"></div>
+<div id="feedback"></div>
+<button id="repeatBtn" onclick="repeatQuestion()">השמע שוב</button>
+<button id="nextBtn" class="hidden" onclick="nextQuestion()">שאלה הבאה</button>
+<button onclick="backToMenu()">חזרה לתפריט</button>
+</div>
+</div>
+<script>
+const words = ['ad', 'dad', 'bad', 'cab', 'bed', 'bag', 'big', 'dig', 'fig', 'kid', 'egg', 'like', 'bike', 'milk', 'jam', 'man', 'bin', 'in', 'on', 'gold', 'dog', 'pen', 'pig', 'red', 'frog', 'car', 'radio', 'sofa', 'sing', 'disk', 'ten', 'get', 'bat', 'rat', 'mat', 'test', 'sit', 'stand', 'cut', 'cat', 'hit', 'hat', 'understand', 'unicorn', 'vet', 'corn', 'wet', 'word', 'exit', 'fox', 'the', 'melon', 'boy', 'lemon', 'lamp', 'computer', 'box', 'pen'];
+const wordImages = {};
+words.forEach(w => { wordImages[w] = "images/" + w + ".jpg"; });
+
+let quizType=0, currentQuestion=0, currentAnswer='', quizData=[], lastSpoken='';
+function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
+function speak(text){ lastSpoken=text; const u=new SpeechSynthesisUtterance(text); u.rate=0.8; speechSynthesis.speak(u); }
+function repeatQuestion(){ if(lastSpoken)speak(lastSpoken); }
+function backToMenu(){ document.getElementById('quiz').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); currentQuestion=0; quizData=[]; }
+function startQuiz(type){ quizType=type; document.getElementById('menu').classList.add('hidden'); document.getElementById('quiz').classList.remove('hidden'); prepareQuiz(); showQuestion(); }
+function prepareQuiz(){
+  if(quizType===1) quizData=shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+  else if(quizType===2) quizData=shuffle('abcdefghijklmnopqrstuvwxyz'.split(''));
+  else if(quizType===3) quizData=shuffle('abcdefghijklmnopqrstuvwxyz'.split(''));
+  else if(quizType===4) quizData=shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+  else if(quizType===5) quizData=shuffle(words.slice());
+  else if(quizType===6) quizData=shuffle(words.slice());
+}
+function showQuestion(){
+  document.getElementById('feedback').innerText='';
+  document.getElementById('nextBtn').classList.add('hidden');
+  const qImg=document.getElementById('questionImage'); qImg.classList.add('hidden');
+  if(currentQuestion>=quizData.length){ document.getElementById('question').innerText='סיימת את החידון!'; document.getElementById('options').innerHTML=''; return; }
+  let question=''; let options=[];
+  if(quizType===1||quizType===2){ currentAnswer=quizData[currentQuestion]; question='בחר את האות שהושמעה:'; options=shuffle((quizType===1?'ABCDEFGHIJKLMNOPQRSTUVWXYZ':'abcdefghijklmnopqrstuvwxyz').split('')); speak(currentAnswer); }
+  else if(quizType===3){ currentAnswer=quizData[currentQuestion].toUpperCase(); question='איזו אות גדולה מתאימה לאות הקטנה "'+quizData[currentQuestion]+'"?'; options=shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')); speak(quizData[currentQuestion]); }
+  else if(quizType===4){ currentAnswer=quizData[currentQuestion].toLowerCase(); question='איזו אות קטנה מתאימה לאות הגדולה "'+quizData[currentQuestion]+'"?'; options=shuffle('abcdefghijklmnopqrstuvwxyz'.split('')); speak(quizData[currentQuestion]); }
+  else if(quizType===5){ currentAnswer=quizData[currentQuestion]; question='בחר את המילה שהושמעה:'; options=shuffle([currentAnswer,...shuffle(words.filter(w=>w!==currentAnswer)).slice(0,3)]); speak(currentAnswer); }
+  else if(quizType===6){ currentAnswer=quizData[currentQuestion][0]; question='איזו אות קטנה מתחילה את המילה שבתמונה?'; if(wordImages[quizData[currentQuestion]]){ qImg.src=wordImages[quizData[currentQuestion]]; qImg.classList.remove('hidden'); } options='abcdefghijklmnopqrstuvwxyz'.split(''); }
+  document.getElementById('question').innerText=question;
+  const optionsDiv=document.getElementById('options'); optionsDiv.innerHTML='';
+  options.forEach(opt=>{ const btn=document.createElement('button'); btn.innerText=opt; btn.onclick=()=>checkAnswer(opt); optionsDiv.appendChild(btn); });
+}
+function checkAnswer(selected){ if(selected===currentAnswer){ document.getElementById('feedback').innerText='נכון!'; document.getElementById('nextBtn').classList.remove('hidden'); } else { document.getElementById('feedback').innerText='שגיאה, נסה שוב.'; } }
+function nextQuestion(){ currentQuestion++; showQuestion(); }
+</script>
+</body></html>
