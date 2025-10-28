@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,7 +69,20 @@ function showQuestion(){
   const optionsDiv=document.getElementById('options'); optionsDiv.innerHTML='';
   options.forEach(opt=>{ const btn=document.createElement('button'); btn.innerText=opt; btn.onclick=()=>checkAnswer(opt); optionsDiv.appendChild(btn); });
 }
-function checkAnswer(selected){ if(selected===currentAnswer){ document.getElementById('feedback').innerText='נכון!'; document.getElementById('nextBtn').classList.remove('hidden'); } else { document.getElementById('feedback').innerText='שגיאה, נסה שוב.'; } }
-function nextQuestion(){ currentQuestion++; showQuestion(); }
+//function checkAnswer(selected){ if(selected===currentAnswer){ document.getElementById('feedback').innerText='נכון!'; document.getElementById('nextBtn').classList.remove('hidden'); } else { document.getElementById('feedback').innerText='שגיאה, נסה שוב.'; } }
+  function checkAnswer(selected){
+  const feedback = document.getElementById('feedback');
+  if(selected === currentAnswer){
+    feedback.innerText = 'נכון!';
+    // מעבר אוטומטי אחרי שנייה
+    setTimeout(() => {
+      currentQuestion++;
+      showQuestion();
+    }, 1000);
+  } else {
+    feedback.innerText = 'שגיאה, נסה שוב.';
+  }
+  }
+  function nextQuestion(){ currentQuestion++; showQuestion(); }
 </script>
 </body></html>
